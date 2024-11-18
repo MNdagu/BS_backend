@@ -14,9 +14,9 @@ def create_app():
     app = Flask(__name__)
 
     # Database and JWT configuration
-    db_path = os.path.join(os.path.abspath(os.getcwd()), "beautyshop.sqlite")
+    db_path = os.path.join(os.path.abspath(os.getcwd()), "beautyshop.db")
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-    app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # Change this in production
+    app.config['JWT_SECRET_KEY'] = 'secret'
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=5)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=15)
 
@@ -166,7 +166,7 @@ def create_app():
     ### Blueprint Registration ###
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
-    # Create blueprints and APIs for each resource
+    # Blueprints and APIs
     product_bp = Blueprint('product', __name__)
     api_product = Api(product_bp)
     api_product.add_resource(ProductResource, '/products', '/products/<int:product_id>')

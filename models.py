@@ -15,8 +15,19 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    orders = db.relationship('Order', backref='user', lazy=True)
+    orders = db.relationship('Order', backref='user')
     cart = db.relationship('Cart', uselist=False, backref='user')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "role": self.role,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
 
 
 # Products Model
@@ -34,8 +45,21 @@ class Product(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     category = db.relationship('Category', backref='products')
-    order_items = db.relationship('OrderItem', backref='product', lazy=True)
-    cart_items = db.relationship('CartItem', backref='product', lazy=True)
+    order_items = db.relationship('OrderItem', backref='product')
+    cart_items = db.relationship('CartItem', backref='product')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "buying_price": float(self.buying_price),
+            "selling_price": float(self.selling_price),
+            "stock": self.stock,
+            "category_id": self.category_id,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
 
 
 # Categories Model
@@ -44,6 +68,13 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.Text)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description
+        }
 
 
 # Orders Model
@@ -56,8 +87,18 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    order_items = db.relationship('OrderItem', backref='order', lazy=True)
+    order_items = db.relationship('OrderItem', backref='order')
     payment = db.relationship('Payment', uselist=False, backref='order')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "total_price": float(self.total_price),
+            "status": self.status,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
 
 
 # Order Items Model
@@ -69,6 +110,15 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     unit_price = db.Column(db.Numeric, nullable=False)
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "order_id": self.order_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "unit_price": float(self.unit_price)
+        }
+
 
 # Carts Model
 class Cart(db.Model):
@@ -78,7 +128,15 @@ class Cart(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    cart_items = db.relationship('CartItem', backref='cart', lazy=True)
+    cart_items = db.relationship('CartItem', backref='cart')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
 
 
 # Cart Items Model
@@ -88,6 +146,14 @@ class CartItem(db.Model):
     cart_id = db.Column(db.Integer, db.ForeignKey('carts.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "cart_id": self.cart_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity
+        }
 
 
 # Payments Model
@@ -101,6 +167,15 @@ class Payment(db.Model):
 
     sale = db.relationship('Sale', uselist=False, backref='payment')
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "order_id": self.order_id,
+            "billing_address": self.billing_address,
+            "total_amount": float(self.total_amount),
+            "created_at": self.created_at
+        }
+
 
 # Sales Model
 class Sale(db.Model):
@@ -109,6 +184,14 @@ class Sale(db.Model):
     payment_id = db.Column(db.Integer, db.ForeignKey('payments.id'), nullable=False)
     sale_date = db.Column(db.DateTime, default=datetime.utcnow)
     amount = db.Column(db.Numeric, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "payment_id": self.payment_id,
+            "sale_date": self.sale_date,
+            "amount": float(self.amount)
+        }
 
 
 # Suppliers Model
@@ -120,9 +203,15 @@ class Supplier(db.Model):
 
     purchase_orders = db.relationship('PurchaseOrder', backref='supplier')
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "location": self.location
+        }
 
-# Purchase Orders Model tracks individual purchase orders placed with suppliers
-# When inventory is low, a new PurchaseOrder is created, linking to the relevant supplier and product, specifying the quantity and cost.
+
+# Purchase Orders Model
 class PurchaseOrder(db.Model):
     __tablename__ = 'purchase_orders'
     id = db.Column(db.Integer, primary_key=True)
@@ -131,3 +220,13 @@ class PurchaseOrder(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     order_date = db.Column(db.Date, default=datetime.utcnow)
     cost = db.Column(db.Numeric, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "supplier_id": self.supplier_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "order_date": self.order_date,
+            "cost": float(self.cost)
+        }

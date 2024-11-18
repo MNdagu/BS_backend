@@ -27,6 +27,7 @@ six = "==1.16.0"
 sqlalchemy = "==2.0.36"
 typing-extensions = "==4.12.2"
 werkzeug = "==3.1.2"
+gunicorn = "*"
 
 [dev-packages]
 
